@@ -1,4 +1,6 @@
 # Based on https://raw.githubusercontent.com/github/gitignore/main/Node.gitignore
+map.txt
+hyricing.txt
 
 # Logs
 

@@ -17,23 +17,28 @@ async function main() {
   setInterval(() => {
     const s = child_process.spawn('mpc', ['status'])
     s.stdout.on('data', async (data) => {
+      if(td.decode(data).includes("n/a")) {
+        fs.writeFile("hyricing.txt", "null")
+        return
+      }
       let song_name = td.decode(data)
       let t = song_name.split("\n")[1].split(" ")[4].split("/")[0]
       song_name = song_name.split("\n")[0]
       song_name = song_name.substring(song_name.indexOf("-")+2, song_name.length).trim();
       const song_file_path = map.get(song_name)
       const has = lmap.get(song_name)
-      const cl = Boolean(has)?has:await get_current_lyrics(song_file_path)
-      if(cl&&!Boolean(has)) lmap.set(song_name, cl)
+      let cl;
+      if(has) {
+        cl = has;
+      }else {
+        cl = await get_current_lyrics(song_file_path)  
+        lmap.set(song_name, cl)
+      }
       if(compare(t, cl[0].time)===-1) {
-        process.stdout.clearLine(1)
-        process.stdout.cursorTo(0, 0)
-        process.stdout.write(song_name+"\r")
+        fs.writeFile("hyricing.txt", "《"+song_name+"》")
       }
       else if(compare(t, cl[cl.length-1].time)===1) {
-        process.stdout.clearLine(1)
-        process.stdout.cursorTo(0, 0)
-        process.stdout.write(cl[cl.length-1].text+"\r")
+        fs.writeFile("hyricing.txt", cl[cl.length-1].text+"󰝚󰝚󰝚")
       }
       else {
         for(let i = 0; i < cl.length-1; i++) {
@@ -41,21 +46,17 @@ async function main() {
           if(compare(t, cl[i].time)===1&&compare(t, cl[j].time)===-1) {
             if(cl[i].text.trim())
             {
-              process.stdout.clearLine(1)
-              process.stdout.cursorTo(0, 0)
-              process.stdout.write("\x1b[32m"+cl[i].text+"\r")
+              fs.writeFile("hyricing.txt", cl[i].text)
             }
             else{
-              process.stdout.clearLine(1)
-              process.stdout.cursorTo(0, 0)
-              process.stdout.write("󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚\r")
+              fs.writeFile("hyricing.txt", "󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚")
             }
             break;
           }
         }
       }
     })
-  }, 1000)
+  }, 500)
 
 
   function compare(t1, t2) {
@@ -76,9 +77,13 @@ async function main() {
 async function recurIndex(path) {
   const s = await fs.stat(path)
   if(!s.isDirectory()) {
-      const res = await mm.parseFile(path)
-      const song_name = res.common.title.trim();
-      map.set(song_name, path)
+      try {
+        const res = await mm.parseFile(path)
+        const song_name = res.common.title.trim();
+        map.set(song_name, path)
+      } catch (error) {
+         
+      }
   }else {
      const items = await fs.readdir(path)
   for(const item of items) {
@@ -87,9 +92,13 @@ async function recurIndex(path) {
     if(s.isDirectory()) {
       await recurIndex(item_path)
     }else {
-      const res = await mm.parseFile(item_path)
-      const song_name = res.common.title.trim();
-      map.set(song_name, item_path)
+      try {
+        const res = await mm.parseFile(item_path)
+        const song_name = res.common.title.trim();
+        map.set(song_name, item_path)
+      } catch (error) {
+        
+      }
     }
   }
   }
