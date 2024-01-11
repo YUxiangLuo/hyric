@@ -77,7 +77,7 @@ async function recurIndex(path) {
   const s = await fs.stat(path)
   if(!s.isDirectory()) {
       const res = await mm.parseFile(path)
-      const song_name = res.common.title;
+      const song_name = res.common.title.trim();
       map.set(song_name, path)
   }else {
      const items = await fs.readdir(path)
@@ -88,7 +88,7 @@ async function recurIndex(path) {
       await recurIndex(item_path)
     }else {
       const res = await mm.parseFile(item_path)
-      const song_name = res.common.title;
+      const song_name = res.common.title.trim();
       map.set(song_name, item_path)
     }
   }
