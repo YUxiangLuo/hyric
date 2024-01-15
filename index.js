@@ -1,24 +1,30 @@
+#!/usr/bin/env node
 import mm from "music-metadata"
 import fs from "node:fs/promises"
 import child_process from "node:child_process"
 import util from "node:util"
 const td = new util.TextDecoder()
 
+child_process.spawn('cp', ['hyric.sh', process.env.HOME+'/.config/waybar/'])
 main()
 
 const map = new Map()
 const lmap = new Map() // 保存已经提取过的歌词
 async function main() {
-  const music_folder = "/home/alice/Music"
+  const music_folder = process.env.HOME+"/Music"
   await recurIndex(music_folder)
-  fs.writeFile("./map.txt", JSON.stringify(Array.from(map.entries())))
 
 
   setInterval(() => {
     const s = child_process.spawn('mpc', ['status'])
     s.stdout.on('data', async (data) => {
+      let s = td.decode(data)
+      if(s.split("\n").length===2) {
+        fs.writeFile(process.env.HOME+"/.config/waybar/lyric.txt", "null")
+        return
+      }
       if(td.decode(data).includes("n/a")) {
-        fs.writeFile("hyricing.txt", "null")
+        fs.writeFile(process.env.HOME+"/.config/waybar/lyric.txt", "null")
         return
       }
       let song_name = td.decode(data)
@@ -35,10 +41,10 @@ async function main() {
         lmap.set(song_name, cl)
       }
       if(compare(t, cl[0].time)===-1) {
-        fs.writeFile("hyricing.txt", "《"+song_name+"》")
+        fs.writeFile(process.env.HOME+"/.config/waybar/lyric.txt", "《"+song_name+"》")
       }
       else if(compare(t, cl[cl.length-1].time)===1) {
-        fs.writeFile("hyricing.txt", cl[cl.length-1].text+"󰝚󰝚󰝚")
+        fs.writeFile(process.env.HOME+"/.config/waybar/lyric.txt", cl[cl.length-1].text+"󰝚󰝚󰝚")
       }
       else {
         for(let i = 0; i < cl.length-1; i++) {
@@ -46,10 +52,10 @@ async function main() {
           if(compare(t, cl[i].time)===1&&compare(t, cl[j].time)===-1) {
             if(cl[i].text.trim())
             {
-              fs.writeFile("hyricing.txt", cl[i].text)
+              fs.writeFile(process.env.HOME+"/.config/waybar/lyric.txt", cl[i].text)
             }
             else{
-              fs.writeFile("hyricing.txt", "󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚")
+              fs.writeFile(process.env.HOME+"/.config/waybar/lyric.txt", "󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚󰝚")
             }
             break;
           }

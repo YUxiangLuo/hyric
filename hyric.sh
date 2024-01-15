@@ -1,1 +1,1 @@
-echo $(cat $HOME/Pros/hyric/hyricing.txt)
+echo $(cat $HOME/.config/waybar/lyric.txt)
