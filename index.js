@@ -31,7 +31,11 @@ async function main() {
       let t = song_name.split("\n")[1].split(" ")[4].split("/")[0]
       song_name = song_name.split("\n")[0]
       song_name = song_name.substring(song_name.indexOf("-")+2, song_name.length).trim();
-      const song_file_path = map.get(song_name)
+      let song_file_path = map.get(song_name)
+      if(!song_file_path) {
+       await recurIndex(music_folder);
+        song_file_path = map.get(song_name)
+      }
       const has = lmap.get(song_name)
       let cl;
       if(has) {
