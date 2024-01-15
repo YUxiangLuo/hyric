@@ -1,6 +1,9 @@
 This is a waybar module to show the lyrics of mpd.
 
-**Make sure your song directory is ~/Music and your waybar config directory is ~/.config/waybar**
+**Requirements:**
+1. Your song directory is ~/Music
+2. Your waybar config directory is ~/.config/waybar/
+3. mpc is installed
 
 **Install and run**
 ```shell
